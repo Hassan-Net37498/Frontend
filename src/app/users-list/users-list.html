@@ -1,0 +1,208 @@
+<div class="container-fluid bg-light min-vh-100 py-4">
+    <div class="container">
+
+        <!-- Header -->
+        <div class="mb-4">
+            <h1 class="display-6 fw-bold text-dark">User Management</h1>
+            <p class="text-muted">Manage your players and their accounts</p>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card shadow-sm text-center">
+                    <div class="card-body">
+                        <h6 class="text-muted">Total Users</h6>
+                        <h2 class="fw-bold text-primary">{{ userss.length }}</h2>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card shadow-sm text-center">
+                    <div class="card-body">
+                        <h6 class="text-muted">Active Users {{active}} </h6>
+                        <h2 class="fw-bold text-success">
+
+                        </h2>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card shadow-sm text-center">
+                    <div class="card-body">
+                        <h6 class="text-muted">Blocked Users {{blocked}} </h6>
+                        <h2 class="fw-bold text-danger">
+
+                        </h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add User Button -->
+        <div class="d-flex justify-content-end mb-3">
+            <button class="btn btn-primary" (click)="openAddModal()">
+                <i class="bi bi-plus-circle me-2"></i>Add User
+            </button>
+        </div>
+
+        <!-- Users Table -->
+        <div class="card shadow-sm" *ngIf="userss.length > 0">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Users List</h5>
+                <span class="badge bg-primary">{{ userss.length }} Users</span>
+            </div>
+
+            <div class="card-body p-0">
+                <!-- Responsive scroll container -->
+                <div class="table-responsive" style="max-height: 900px; overflow-y: auto;">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th>User</th>
+                                <th>Contact</th>
+                                <th>Country</th>
+                                <th>Status</th>
+                                <th>Created At</th>
+                                <th>Total Deposits</th>
+                                <th>Total Wagers</th>
+                                <th>Total Losses</th>
+                                <th>Action</th>
+                                <th>block</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <tr *ngFor="let u of userss; let i = index">
+                                <td>{{ i + 1 }}</td>
+
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold me-2"
+                                            style="width: 30px; height: 40px;">
+                                            {{ u.fullName?.charAt(0) }}
+                                        </div>
+                                        <div>
+                                            <div class="fw-semibold">{{ u.fullName }}</div>
+                                            <small class="text-muted">{{ u.email }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <td>{{ u.phoneNumber || 'N/A' }}</td>
+                                <td>{{ u.country || 'N/A' }}</td>
+
+                                <td>
+                                    <span class="badge" [ngClass]="u.isBlocked ? 'bg-danger' : 'bg-success'">
+                                        {{ u.isBlocked ? 'Blocked' : 'Active' }}
+                                    </span>
+                                </td>
+
+                                <td>{{ u.createdAt | date:'medium' }}</td>
+
+                                <td>{{ u.totalDeposits | currency:'USD' }}</td>
+                                <td>{{ u.totalWagers | currency:'USD' }}</td>
+                                <td>{{ u.totalLosses | currency:'USD' }}</td>
+                                <td class="text-center">
+                                    <!-- Remove Button -->
+                                    <button class="btn btn-sm btn-danger me-2" (click)="deleteUser(u.id)"
+                                        title="Remove User">
+                                        <i class="bi bi-trash"></i> Remove
+                                    </button>
+
+                                    <!-- Edit Button -->
+                                    <button class="btn btn-sm btn-warning"  (click)="editUser(u)" title="Edit User">
+                                        <i class="bi bi-pencil"></i> Edit
+                                    </button>
+                                </td>
+                                @if( !u.isBlocked){
+                                    <td>
+                                    <button class="btn btn-sm btn-danger me-2" (click)="toggleBlock(u)" 
+                                        title="block User">
+                                        <i class="bi bi-trash"></i> Block
+                                    </button>
+                                    </td>
+                                }
+                                
+
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div *ngIf="userss.length === 0" class="text-center py-5">
+            <i class="bi bi-people fs-1 text-muted"></i>
+            <h5 class="mt-3 text-muted">No users found</h5>
+        </div>
+
+
+        <!-- Add User Modal -->
+        <div class="modal fade" [class.show]="showAddModal" [style.display]="showAddModal ? 'block' : 'none'">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Add New User</h5>
+                        <button type="button" class="btn-close" (click)="closeAddModal()"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <form *ngIf="userForm" [formGroup]="userForm">
+                            <div class="mb-3">
+                                <label class="form-label">Full Name</label>
+                                <input class="form-control" formControlName="fullName">
+                                <div class="text-danger"
+                                    *ngIf="userForm.get('fullName')?.invalid && userForm.get('fullName')?.touched">
+                                    name is required
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Email</label>
+                                <input class="form-control" formControlName="email">
+                                <div class="text-danger"
+                                    *ngIf="userForm.get('email')?.invalid && userForm.get('email')?.touched">
+                                    Email is required and must be valid
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Password</label>
+                                <input type="password" class="form-control" formControlName="password">
+                                <div class="text-danger"
+                                    *ngIf="userForm.get('password')?.invalid && userForm.get('password')?.touched">
+                                    password is required
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Phone</label>
+                                <input class="form-control" formControlName="phoneNumber">
+                                <div class="text-danger"
+                                    *ngIf="userForm.get('phoneNumber')?.invalid && userForm.get('phoneNumber')?.touched">
+                                    phoneNumber is required
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Country</label>
+                                <input class="form-control" formControlName="country">
+                                <div class="text-danger"
+                                    *ngIf="userForm.get('country')?.invalid && userForm.get('country')?.touched">
+                                    country is required
+                                </div>
+                            </div>
+
+                            <button class="btn btn-primary w-100" type="button" (click)="addUser()">Add User</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-backdrop fade show" *ngIf="showAddModal"></div>

@@ -1,0 +1,91 @@
+<div class="container min-vh-100 d-flex justify-content-center align-items-center py-5">
+  <div class="col-12 col-sm-10 col-md-6 col-lg-4">
+    
+    <!-- Header -->
+    <div class="text-center mb-4">
+      <h2 class="fw-bold">Agent Panel Login</h2>
+      <p class="text-muted">Sign in to your agent account</p>
+    </div>
+
+    <!-- Login Card -->
+    <div class="card shadow-sm">
+      <div class="card-body p-4">
+
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+
+          <!-- Error Message -->
+          <div *ngIf="errorMessage" class="alert alert-danger">
+            {{ errorMessage }}
+          </div>
+
+          <!-- Email -->
+          <div class="mb-3">
+            <label class="form-label">Email address</label>
+            <input
+              type="email"
+              class="form-control"
+              formControlName="email"
+              [class.is-invalid]="submitted && f['email'].errors"
+              placeholder="Enter your email"
+            />
+            <div *ngIf="submitted && f['email'].errors" class="invalid-feedback">
+              <div *ngIf="f['email'].errors['required']">Email is required</div>
+              <div *ngIf="f['email'].errors['email']">Email must be valid</div>
+            </div>
+          </div>
+
+          <!-- Password -->
+          <div class="mb-3">
+            <label class="form-label">Password</label>
+            <div class="input-group">
+              <input
+                [type]="hidePassword ? 'password' : 'text'"
+                class="form-control"
+                formControlName="password"
+                [class.is-invalid]="submitted && f['password'].errors"
+                placeholder="Enter your password"
+              />
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                (click)="togglePasswordVisibility()"
+              >
+                {{ hidePassword ? '👁️' : '🙈' }}
+              </button>
+              <div *ngIf="submitted && f['password'].errors" class="invalid-feedback d-block">
+                <div *ngIf="f['password'].errors['required']">Password is required</div>
+                <div *ngIf="f['password'].errors['minlength']">
+                  Password must be at least 6 characters
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Forgot password -->
+          <div class="text-end mb-3">
+            <a href="/forgot-password" class="small">Forgot your password?</a>
+          </div>
+
+          <!-- Submit -->
+          <button
+            type="submit"
+            class="btn btn-primary w-100"
+            [disabled]="loading"
+          >
+            <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+            {{ loading ? 'Signing in...' : 'Sign in' }}
+          </button>
+
+          <!-- Demo Credentials -->
+          <div class="alert alert-info mt-4">
+            <strong>Demo Credentials</strong><br />
+            Email: <code>agent@test.com</code><br />
+            Password: <code>password123</code>
+          </div>
+
+        </form>
+      </div>
+    </div>
+
+  </div>
+</div>

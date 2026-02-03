@@ -1,0 +1,135 @@
+<div class="min-vh-100 bg-light">
+  <!-- Header -->
+  <nav class="navbar navbar-light bg-white shadow-sm border-bottom">
+    <div class="container-fluid px-4">
+      <div class="d-flex justify-content-between align-items-center w-100">
+        <div class="d-flex align-items-center">
+          <h1 class="h3 mb-0 text-primary fw-bold">Agent Panel</h1>
+          <span class="badge bg-primary bg-opacity-10 text-primary ms-3">Dashboard</span>
+        </div>
+        <div class="d-flex align-items-center">
+          <div class="text-end me-3">
+            <p class="mb-0 small fw-medium">{{ currentUser?.fullName }}</p>
+            <p class="mb-0 text-muted" style="font-size: 0.75rem;">{{ currentUser?.email }}</p>
+          </div>
+          <button (click)="logout()" class="btn btn-danger btn-sm">Logout</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="container-fluid py-4 px-4">
+    <div *ngIf="stats">
+      
+      <!-- Welcome Message -->
+      <div class="mb-4">
+        <h2 class="display-6 fw-bold">Welcome back, {{ currentUser?.fullName }}! 👋</h2>
+        <p class="text-muted">Here's what's happening with your agent account today.</p>
+      </div>
+
+      <!-- KPI Cards -->
+      <div class="row g-4 mb-4" >
+        <!-- Total Users Card -->
+        <div class="col-12 col-md-6 col-lg-3">
+          <div class="card border-start border-primary border-4 shadow-sm h-100">
+            <div class="card-body">
+                 <button class="btn btn-primary w-50" (click)="user()">View Users</button>
+              <p class="text-muted small mb-2">Total Users</p>
+              <h3 class="display-6 fw-bold mb-2">{{ usersCount }}</h3>
+              <p class="small mb-0">
+                <span class="text-success">{{ stats.activeUsers }} active</span> · 
+                <span class="text-danger">{{ stats.blockedUsers }} blocked</span>
+              </p>
+            </div>
+          </div>
+        </div>
+         <div class="mt-4">
+        <router-outlet></router-outlet>
+      </div>
+
+        <!-- Total Revenue Card -->
+        <div class="col-12 col-md-6 col-lg-3">
+          <div class="card border-start border-success border-4 shadow-sm h-100">
+            <div class="card-body">
+              <p class="text-muted small mb-2">Total Revenue</p>
+              <h3 class="display-6 fw-bold mb-2">{{ formatCurrency(12500) }}</h3>
+              <p class="small text-success mb-0">All-time earnings</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pending Commission Card -->
+        <div class="col-12 col-md-6 col-lg-3">
+          <div class="card border-start border-warning border-4 shadow-sm h-100">
+            <div class="card-body">
+                 <button class="btn btn-primary w-50" (click)="comission()">Comission</button>
+              <p class="text-muted small mb-2">Pending Commission</p>
+              <h3 class="display-6 fw-bold mb-2">{{ formatCurrency(8700) }}</h3>
+              <p class="small text-warning mb-0">Awaiting settlement</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Withdrawable Balance Card -->
+        <div class="col-12 col-md-6 col-lg-3">
+          <div class="card border-start border-info border-4 shadow-sm h-100">
+            <div class="card-body">
+                 <button class="btn btn-primary w-50" (click)="withdraw()">withdraw</button>
+              <p class="text-muted small mb-2">Withdrawable Balance</p>
+              <h3 class="display-6 fw-bold mb-2">{{ formatCurrency(32000) }}</h3>
+              <p class="small text-info mb-0">Ready for withdrawal</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Stats Summary -->
+      <div class="row g-4">
+        <div class="col-12 col-lg-4">
+          <div class="card shadow-sm">
+            <div class="card-body">
+              <h3 class="h5 fw-bold mb-4">Quick Summary</h3>
+              <div class="border-bottom pb-3 mb-3">
+                <p class="text-muted small mb-1">Active Users {{usersCount}}</p>
+                <div class="d-flex align-items-center">
+                  <h4 class="h4 fw-bold mb-0">{{ stats.activeUsers }}</h4>
+                  <span class="badge bg-success bg-opacity-25 text-success ms-2" style="font-size: 0.75rem;">
+                    {{ ((stats.activeUsers / stats.totalUsers) * 100).toFixed(0) }}%
+                  </span>
+                </div>
+              </div>
+
+              <div class="pb-3">
+                <p class="text-muted small mb-1">Commission Rate</p>
+                <h4 class="h4 fw-bold mb-0">10%</h4>
+                <p class="text-muted small mb-0">Standard rate</p>
+              </div>
+
+              <div class="pt-3 border-top mt-4">
+                <button class="btn btn-primary w-100">View Full Report</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Coming Soon Section -->
+      <div class="mt-4 card border-0 shadow-sm" style="background: linear-gradient(135deg, #6366f1 0%, #9333ea 100%);">
+        <div class="card-body text-white">
+          <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
+            <div class="mb-3 mb-md-0">
+              <h3 class="h5 fw-bold mb-2">🚀 More Features Coming Soon</h3>
+              <p class="mb-0 opacity-75">User management, commission tracking, withdrawal requests, and more...</p>
+            </div>
+            <div>
+              <span class="badge bg-white text-primary fw-semibold px-3 py-2"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+

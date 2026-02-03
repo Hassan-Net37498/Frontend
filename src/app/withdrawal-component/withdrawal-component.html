@@ -1,0 +1,264 @@
+<div class="container-fluid bg-light min-vh-100 py-4">
+  <div class="container">
+    
+    <!-- Header -->
+    <div class="mb-4">
+      <h1 class="display-5 fw-bold text-dark">Withdrawal Requests</h1>
+      <p class="text-muted">Manage your withdrawal requests and track payment status</p>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row g-3 mb-4" *ngIf="stats">
+      
+      <div class="col-md-6 col-lg-4">
+        <div class="card border-start border-success border-4 shadow-sm h-100">
+          <div class="card-body">
+            <p class="text-muted small mb-1">Available Balance</p>
+            <h3 class="display-6 fw-bold text-success">{{ formatCurrency(stats.availableBalance) }}</h3>
+            <small class="text-muted">Ready for withdrawal</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-4">
+        <div class="card border-start border-warning border-4 shadow-sm h-100">
+          <div class="card-body">
+            <p class="text-muted small mb-1">Pending Requests</p>
+            <h3 class="display-6 fw-bold text-warning">{{ stats.pendingRequests }}</h3>
+            <small class="text-muted">Amount: {{ formatCurrency(stats.pendingAmount) }}</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-4">
+        <div class="card border-start border-primary border-4 shadow-sm h-100">
+          <div class="card-body">
+            <p class="text-muted small mb-1">Total Withdrawn</p>
+            <h3 class="display-6 fw-bold text-primary">{{ formatCurrency(stats.totalWithdrawn) }}</h3>
+            <small class="text-muted">{{ stats.approvedRequests }} approved requests</small>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Actions -->
+    <div class="card shadow-sm mb-4">
+      <div class="card-body">
+        <div class="row g-3 align-items-end">
+          
+          <div class="col-md-9">
+            <label class="form-label fw-semibold">Filter by Status</label>
+            <select
+              class="form-select"
+              [(ngModel)]="filterStatus"
+              (change)="onFilterChange()"
+            >
+              <option value="all">All Status</option>
+              <option value="pending">Pending</option>
+              <option value="approved">Approved</option>
+              <option value="rejected">Rejected</option>
+            </select>
+          </div>
+
+          <div class="col-md-3">
+            <button
+              class="btn btn-primary w-100"
+              (click)="openRequestModal()"
+            >
+              <i class="bi bi-plus-circle me-2"></i>Request Withdrawal
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="loading" class="text-center py-5">
+      <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <p class="mt-3 text-muted">Loading withdrawals...</p>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="error && !loading" class="alert alert-danger" role="alert">
+      <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ error }}
+    </div>
+
+    <!-- Withdrawal Table -->
+    <div *ngIf="!loading" class="card shadow-sm">
+      
+      <div class="card-header bg-light">
+        <h5 class="mb-0">Withdrawal History ({{ totalItems }} requests)</h5>
+      </div>
+
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Request Date</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Processed Date</th>
+                <th>Notes</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let withdrawal of withdrawals">
+                
+                <td>
+                  <small>{{ formatDateTime(withdrawal.requestedDate) }}</small>
+                </td>
+
+                <td>
+                  <span class="fw-bold">{{ formatCurrency(withdrawal.amount) }}</span>
+                </td>
+
+                <td>
+                  <span class="badge" [ngClass]="getStatusClass(withdrawal.status)">
+                    {{ withdrawal.status }}
+                  </span>
+                </td>
+
+                <td>
+                  <small *ngIf="withdrawal.processedDate">
+                    {{ formatDateTime(withdrawal.processedDate) }}
+                  </small>
+                  <span *ngIf="!withdrawal.processedDate" class="text-muted">-</span>
+                </td>
+
+                <td>
+                  <small class="text-muted">{{ withdrawal.notes || '-' }}</small>
+                  <div *ngIf="withdrawal.rejectionReason" class="small text-danger">
+                    <strong>Reason:</strong> {{ withdrawal.rejectionReason }}
+                  </div>
+                </td>
+
+                <td>
+                  <button
+                    *ngIf="withdrawal.status === 'Pending'"
+                    class="btn btn-sm btn-outline-danger"
+                    (click)="cancelWithdrawal(withdrawal)"
+                  >
+                    <i class="bi bi-x-circle me-1"></i>Cancel
+                  </button>
+                  <span *ngIf="withdrawal.status !== 'Pending'" class="text-muted small">-</span>
+                </td>
+
+              </tr>
+
+              <tr *ngIf="withdrawals.length === 0">
+                <td colspan="6" class="text-center py-5">
+                  <div class="text-muted">
+                    <i class="bi bi-inbox display-1"></i>
+                    <h5 class="mt-3">No withdrawal requests found</h5>
+                    <p>Click "Request Withdrawal" to submit your first request</p>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div *ngIf="totalPages > 1" class="card-footer bg-light">
+        <div class="d-flex justify-content-between align-items-center">
+          <div class="text-muted small">
+            Showing page <strong>{{ currentPage }}</strong> of <strong>{{ totalPages }}</strong>
+          </div>
+          
+          <nav>
+            <ul class="pagination pagination-sm mb-0">
+              <li class="page-item" [class.disabled]="currentPage === 1">
+                <a class="page-link" (click)="goToPage(currentPage - 1)" style="cursor: pointer;">Previous</a>
+              </li>
+
+              <li class="page-item" *ngFor="let page of pageNumbers" [class.active]="page === currentPage">
+                <a class="page-link" (click)="goToPage(page)" style="cursor: pointer;">{{ page }}</a>
+              </li>
+
+              <li class="page-item" [class.disabled]="currentPage === totalPages">
+                <a class="page-link" (click)="goToPage(currentPage + 1)" style="cursor: pointer;">Next</a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<!-- Request Withdrawal Modal -->
+<div class="modal fade" [class.show]="showRequestModal" [style.display]="showRequestModal ? 'block' : 'none'" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Request Withdrawal</h5>
+        <button type="button" class="btn-close" (click)="closeRequestModal()"></button>
+      </div>
+      <div class="modal-body">
+        
+        <div class="alert alert-info" *ngIf="stats">
+          <i class="bi bi-info-circle me-2"></i>
+          <strong>Available Balance:</strong> {{ formatCurrency(stats.availableBalance) }}
+        </div>
+
+        <form [formGroup]="withdrawalForm">
+          <div class="mb-3">
+            <label class="form-label">Amount <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <span class="input-group-text">$</span>
+              <input
+                type="number"
+                class="form-control"
+                formControlName="amount"
+                placeholder="0.00"
+                step="0.01"
+              />
+            </div>
+            <div *ngIf="withdrawalForm.get('amount')?.invalid && withdrawalForm.get('amount')?.touched" 
+                 class="text-danger small mt-1">
+              Amount is required and must be greater than 0
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Notes (Optional)</label>
+            <textarea
+              class="form-control"
+              formControlName="notes"
+              rows="3"
+              placeholder="Add any notes about this withdrawal request..."
+            ></textarea>
+          </div>
+        </form>
+
+        <div class="alert alert-warning small">
+          <i class="bi bi-exclamation-triangle me-2"></i>
+          <strong>Note:</strong> You can only have one pending withdrawal request at a time. 
+          The request will be reviewed and processed by the admin.
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeRequestModal()">Cancel</button>
+        <button 
+          type="button" 
+          class="btn btn-primary" 
+          (click)="submitWithdrawal()"
+          [disabled]="withdrawalForm.invalid || submitting"
+        >
+          {{ submitting ? 'Submitting...' : 'Submit Request' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-backdrop fade" [class.show]="showRequestModal" *ngIf="showRequestModal"></div>
